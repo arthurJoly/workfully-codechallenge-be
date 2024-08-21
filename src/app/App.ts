@@ -1,5 +1,6 @@
 import express, {Express, Request, Response} from "express";
 import { Server, IncomingMessage, ServerResponse } from "http";
+import { router as accountRouter } from "../account/AccountRouter";
 
 
 export class App {
@@ -11,10 +12,8 @@ export class App {
         this.port = port;
     }
 
-    start(): void {
-        this.express.get('/dummy', (request: Request, response: Response) => {
-            response.send('something!')
-        })
+    start(): void {        
+        this.express.use('/account', accountRouter)
 
         this.server = this.express.listen(this.port)
     }
