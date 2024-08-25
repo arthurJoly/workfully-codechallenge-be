@@ -1,6 +1,7 @@
 import express, {Express, Request, Response} from "express";
 import { Server, IncomingMessage, ServerResponse } from "http";
 import { router as accountRouter } from "../account/AccountRouter";
+import { json } from "body-parser";
 
 
 export class App {
@@ -12,7 +13,8 @@ export class App {
         this.port = port;
     }
 
-    start(): void {        
+    start(): void {    
+        this.express.use(express.json())    
         this.express.use('/account', accountRouter)
 
         this.server = this.express.listen(this.port)
