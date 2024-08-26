@@ -3,52 +3,48 @@ import { Account } from "./Account";
 import { MissingAccountError } from "./MissingAccountError";
 
 export class AccountService {
-    private accounts: Map<string, Account>;
 
     constructor() {
-        this.accounts = new Map<string, Account>();
     }
 
-    public createAccount(): string {
-        var id = "test" + randomInt(100);
-        this.accounts.set(id, new Account(id, "test", 0));
-        return id;
+    public async createAccount(): Promise<number> {
+        const account = await Account.create({amount: 0})
+        return account.id;
     }
 
-    public getAccount(id: string) : Account | undefined {
-        return this.accounts.get(id);
+    public async getAccount(id: number) : Promise<Account | null> {
+        const account = await Account.findByPk(id)
+        return account;
     }
 
-    public withdraw(id: string, amount: number) : Account | undefined {
-        let account = this.accounts.get(id);
+    public async withdraw(id: string, amount: number) : Promise<Account | null> {
+        const account = await Account.findByPk(id);
         if(account) {
             var newAmount = account.amount - amount;
-            account.amount = newAmount;
-            this.accounts.set(account.id, account);
+            Account.update({amount: newAmount}, {where: {id: account.id}})
         } else {
             throw new MissingAccountError(`Account ${id} does not exist`);
         }
         
-        return this.accounts.get(id);
+        return await Account.findByPk(id);
     }
 
-    public deposit(id: string, amount: number) : Account | undefined {
-        let account = this.accounts.get(id);
+    public async deposit(id: string, amount: number) : Promise<Account | null> {
+        let account = await Account.findByPk(id);
         if(account) {
             var newAmount = account.amount + amount;
-            account.amount = newAmount;
-            this.accounts.set(account.id, account);
+            Account.update({amount: newAmount}, {where: {id: account.id}})
         } else {
             throw new MissingAccountError(`Account ${id} does not exist`);
         }
         
-        return this.accounts.get(id);
+        return await Account.findByPk(id);
     }
 
-    public transfer(idFrom: string, idTo: string, amount: number) : Account | undefined {
+    public async transfer(idFrom: string, idTo: string, amount: number) : Promise<Account | null> {
         //TODO: handle exception and rollback if needed (transaction?)
-        this.withdraw(idFrom, amount);
+        const account = this.withdraw(idFrom, amount);
         this.deposit(idTo, amount);
-        return this.accounts.get(idFrom);
+        return account;
     }
 }

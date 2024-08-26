@@ -1,12 +1,16 @@
-export class Account {
+import { Model, DataTypes } from "sequelize";
+import { sequelize } from "../persistence/SequelizeDb";
 
-    id: string;
-    owner: string;
-    public amount: number;
-
-    constructor(id: string, owner: string, amount: number) {
-        this.id = id;
-        this.owner = owner;
-        this.amount = amount;
-    }
+export class Account extends Model {
+    declare id: number;
+    declare amount: number;
 }
+
+Account.init({
+    id:  {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+    },
+    amount: DataTypes.NUMBER
+}, { sequelize, modelName: 'account' });

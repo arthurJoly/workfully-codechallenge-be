@@ -5,20 +5,20 @@ import { MissingAccountError } from "./MissingAccountError";
 const accountService = new AccountService();
 const router = Router();
 
-router.get('/:id', (request, response) => {
-    response.send(`get account ${JSON.stringify(accountService.getAccount(request.params.id))}`);
+router.get('/:id', async (request, response) => {
+    response.send(await accountService.getAccount(parseInt(request.params.id)));
 });
 
-router.post('/', (request, response) => {
-    response.send(accountService.createAccount());
+router.post('/', async (request, response) => {
+    response.send(await accountService.createAccount());
 });
 
-router.put('/deposit', (request, response) => {
+router.put('/deposit', async (request, response) => {
     try {
         var id = request.body.id;
         var amount = request.body.amount;
         if(id && amount) {
-            response.send(`deposit account ${JSON.stringify(accountService.deposit(id, Number(amount)))}`);
+            response.send(await accountService.deposit(id, Number(amount)));
         } else {
             response.status(400).send("Missing Parameters")
         }
@@ -32,12 +32,12 @@ router.put('/deposit', (request, response) => {
     }  
 })
 
-router.put('/withdraw/:id/:amount', (request, response) => {
+router.put('/withdraw/:id/:amount', async (request, response) => {
     try {
         var id = request.params.id;
         var amount = request.params.amount;
         if(id && amount) {
-            response.send(`withdraw account ${JSON.stringify(accountService.withdraw(id, Number(amount)))}`);
+            response.send(await accountService.withdraw(id, Number(amount)));
         } else {
             response.status(400).send("Missing Parameters");
         }
@@ -50,12 +50,12 @@ router.put('/withdraw/:id/:amount', (request, response) => {
     }    
 });
 
-router.put('/transfer/:idFrom/:idTo/:amount', (request, response) => {
+router.put('/transfer/:idFrom/:idTo/:amount', async (request, response) => {
     var idFrom = request.params.idFrom;
     var idTo = request.params.idTo;
     var amount = request.params.amount;
     if(idFrom && idTo && amount) {
-        response.send(`withdraw account ${JSON.stringify(accountService.transfer(idFrom, idTo, Number(amount)))}`);
+        response.send(await accountService.transfer(idFrom, idTo, Number(amount)));
     } else {
         response.status(400).send("Missing Parameters")
     }
