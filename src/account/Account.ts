@@ -12,5 +12,10 @@ Account.init({
         autoIncrement: true,
         primaryKey: true,
     },
-    amount: DataTypes.NUMBER
+    amount: {
+        type: DataTypes.NUMBER,
+        validate: {
+            min: 0
+        }
+    }
 }, { sequelize, modelName: 'account' });

@@ -16,7 +16,6 @@ export class App {
     start(): void {    
         this.express.use(express.json())    
         this.express.use('/account', accountRouter)
-
         this.server = this.express.listen(this.port)
     }
 

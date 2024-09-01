@@ -1,16 +1,28 @@
-import { Router } from "express";
+import { Router, Response } from "express";
 import { AccountService } from "./AccountService";
 import { MissingAccountError } from "./MissingAccountError";
+import { ValidationError } from "sequelize";
 
 const accountService = new AccountService();
 const router = Router();
 
 router.get('/:id', async (request, response) => {
-    response.send(await accountService.getAccount(parseInt(request.params.id)));
+    var account = await accountService.getAccount(parseInt(request.params.id));
+    if(account) {
+        response.send(account);
+    } else {
+        response.sendStatus(404);
+    }
 });
 
 router.post('/', async (request, response) => {
-    response.send(await accountService.createAccount());
+    const promise = accountService.createAccount()
+    promise.then((accountId) => {
+        response.send({ id: accountId });
+    }).catch((erx) => {
+        response.sendStatus(500);
+    }) 
+    
 });
 
 router.put('/deposit', async (request, response) => {
@@ -18,47 +30,57 @@ router.put('/deposit', async (request, response) => {
         var id = request.body.id;
         var amount = request.body.amount;
         if(id && amount) {
-            response.send(await accountService.deposit(id, Number(amount)));
+            accountService.deposit(Number(id), Number(amount)).then((account) => {
+                response.send(account);
+            }).catch((e) => {
+                handleError(e, response);
+            })  
         } else {
             response.status(400).send("Missing Parameters")
         }
-    //TODO: exception handler?
     } catch(e){
-        if (e instanceof MissingAccountError) {
-            response.status(404).send("Account does not exist");
-        } else {
-            response.status(500).send();
-        }    
-    }  
+        handleError(e, response);    
+    }   
 })
 
-router.put('/withdraw/:id/:amount', async (request, response) => {
-    try {
-        var id = request.params.id;
-        var amount = request.params.amount;
-        if(id && amount) {
-            response.send(await accountService.withdraw(id, Number(amount)));
-        } else {
-            response.status(400).send("Missing Parameters");
-        }
-    } catch(e){
-        if (e instanceof MissingAccountError) {
-            response.status(404).send("Account does not exist");
-        } else {
-            response.status(500).send();
-        }    
-    }    
-});
-
-router.put('/transfer/:idFrom/:idTo/:amount', async (request, response) => {
-    var idFrom = request.params.idFrom;
-    var idTo = request.params.idTo;
-    var amount = request.params.amount;
-    if(idFrom && idTo && amount) {
-        response.send(await accountService.transfer(idFrom, idTo, Number(amount)));
+router.put('/withdraw', async (request, response) => {
+    var id = request.body.id;
+    var amount = request.body.amount;
+    if(id  && amount) {
+        accountService.withdraw(Number(id), Number(amount)).then((account) => {
+            response.send(account);
+        }).catch((e) => {
+            handleError(e, response);
+        })  
     } else {
         response.status(400).send("Missing Parameters")
     }
-});;
+});
+
+router.put('/transfer', async (request, response) => {
+    var idFrom = request.body.idFrom;
+    var idTo = request.body.idTo;
+    var amount = request.body.amount;
+    if(idFrom && idTo && amount) {
+        accountService.transfer(Number(idFrom), Number(idTo), Number(amount)).then((account) => {
+            response.send(account);
+        }).catch((e) => {
+            handleError(e, response);
+        })  
+    } else {
+        response.status(400).send("Missing Parameters")
+    }    
+});
+
+function handleError(e: any, response: Response) {
+    if (e instanceof MissingAccountError) {
+        response.status(404).send("Account does not exist");
+    } else if (e instanceof ValidationError) {
+        response.status(400).send("Can not have negative amount");
+    }
+    else {
+        response.status(500).send();
+    }
+}
 
 export { router }
