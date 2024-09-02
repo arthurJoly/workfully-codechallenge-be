@@ -1,3 +1,4 @@
+import { ValidationError } from "sequelize";
 import { AccountService } from "../account/AccountService";
 
 describe('Account Service Test', () => {
@@ -17,12 +18,6 @@ describe('Account Service Test', () => {
         var retrievedAccount = await accountService.getAccount(accountId)
         expect(retrievedAccount?.amount).toBe(50);
     }); 
-    
-    /*it('Withdraw negative account', async () => {
-        var accountService = new AccountService();
-        var accountId = await accountService.createAccount();
-        expect(() => accountService.withdraw(accountId, 50)).toThrow()
-    }); */
 
     it('Transfer account', async () => {
         var accountService = new AccountService();
